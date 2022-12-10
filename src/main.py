@@ -114,7 +114,6 @@ def calculate_color(percent_change):
 
 
 connect()  # connecting to wifi network
-webserver()  # starting webserver
 
 # Using try and except general to make it more resiliant
 try:
