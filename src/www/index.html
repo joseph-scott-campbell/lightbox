@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>StockBox Settings Page</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <! put favicon in base 64 because webserver only allows one file>
+        <link href="data:image/x-icon;base64,
+	    iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpw
+        YAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAABTSURBVHgB7c8BDcAgAMAwftXIQR
+        tGwMZCWgf95l5nPOAfjxCpEakRqRGpEakRqRGpEakRqRGpEakRqRGpEakRqRGpEakRqRGpE
+        akRqRGpEakRqbmEhANdmzET8gAAAABJRU5ErkJggg=="
+        rel="icon" type="image/x-icon" >
+
+        <! have to embedd css to make websever more simple>
+        <style>
+        </style>
+    </head>
+    <body>
+        <h1> StockBox Settings Page </h1>
+        <p> Configure your StockBox from here, fields left blank will remain
+            unchanged. Once you enter your data press the "Configure" button
+            on your stock box to enter this menu again. </p>
+        <hr>
+
+
+        <! make input boxes for the user to enter their wifi credentials>
+        <! send data through uri >
+
+        <p> Enter your WiFi SSID (name of the network) and your WiFi Password </p>
+        <form action="/set?ssid=SSID&password=PASSWORD" method="get">
+            <label for="ssid">SSID:</label><br>
+            <input type="text" id="ssid" name="ssid"><br>
+            <label for="password">Password:</label><br>
+            <input type="text" id="password" name="password"><br><br>
+            <input type="submit" value="Submit">
+
+        <p> Enter what stocks your want to track, the name of each </p>
+        <! getting stock symbols from the user for all 5 stocks>
+        <form action="/set?stock1=STOCK1&stock2=STOCK2&stock3=STOCK3&stock4=STOCK4&stock5=STOCK5"
+              <label for="stock1">Stock 1:</label><br>
+              <input type="text" id="stock1" name="stock1"><br>
+              <label for="stock2">Stock 2:</label><br>
+              <input type="text" id="stock2" name="stock2"><br>
+              <label for="stock3">Stock 3:</label><br>
+              <input type="text" id="stock3" name="stock3"><br>
+              <label for="stock4">Stock 4:</label><br>
+              <input type="text" id="stock4" name="stock4"><br>
+              <label for="stock5">Stock 5:</label><br>
+              <input type="text" id="stock5" name="stock5"><br><br>
+              <input type="submit" value="Submit">
+
+    </body>
+</html>
+
