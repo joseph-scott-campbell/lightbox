@@ -23,7 +23,7 @@ STOCKS = {"NASDAQ": {"symbol": "^IXIC", "pin": 16},
           "Dow Jones": {"symbol": "^DJI", "pin": 17}}
 
 # Wifi Credentials
-SSID = "TP-Link_51CA"
+SSID = "TP-Link_51C"
 PASSWORD = "password"
 rp2.country("US")  # regional code
 
@@ -36,31 +36,42 @@ strip = Neopixel(NEOPIXEL_LEN, 0, 16, "RGB")
 
 
 def connect():
-    wlan = network.WLAN(network.STA_IF)  # initalizing wlan object
-    wlan.active(True)  # running wlan
+    # check if SSID variable is an available network
+    # if it is not available, then start an access point
+    if SSID in [i[0] for i in network.WLAN().scan()]:
+        wlan = network.WLAN(network.STA_IF)
+        wlan.active(True)
+        wlan.connect(SSID, PASSWORD)
+        while not wlan.isconnected():
+            time.sleep(1)
+        print("Connected to", SSID)
+        print("IP Address:", wlan.ifconfig()[0])
+    else:
+        # start access point
+        wlan = network.WLAN(network.AP_IF)
+        wlan.active(True)
+        wlan.config(essid="test", password="test")
+        print("Access Point Started")
+        print("IP Address:", wlan.ifconfig()[0])
+        webserver()
 
-    wlan.connect(SSID, PASSWORD)  # credentials to log into wifi network
+def uri_parser(uri):
+    # parsing the uri based on the input boxes in
+    # www/index.html
 
-    number_of_tries = 0
-    while not wlan.isconnected() and wlan.status() >= 0 and number_of_tries <= 25:
-        print("Waiting to connect...")
-        time.sleep(1)
-        number_of_tries += 1
-    if number_of_tries > 25:
-        print("Failed to connect to wifi")
-        print("Creating configuration network")
-        ap = network.WLAN(network.AP_IF)
-        ap.active(True)
-        ap.config(essid="StockBox Configuration", authmode="open")
-        webserver()  # starting config webserver
+    # if the uri is "break" then it will break the webserver loop
+    if uri == "break":
+        return True
+    # if the uri is "reset" then it will reset the device
+    elif uri == "reset":
         machine.reset()
     else:
-        print(wlan.ifconfig())
+        print(uri)
 
 
 def webserver():
     #  a very simple custom webserver because the existing
-    #  alternatives are too complex for my purposes
+    # alternatives are too complex for my purposes
     addr = socket.getaddrinfo('0.0.0.0', 80)[0][-1]
 
     s = socket.socket()
@@ -91,9 +102,7 @@ def webserver():
         conn.send('HTTP/1.0 200 OK\r\nContent-type: text/html\r\n\r\n')
         conn.send(html)  # sending the html
         conn.close()  # closing the connection
-        if uri == "break":
-            print("breaking")
-            break
+        uri_parser(uri)  # parsing the uri
     # close the socket
     s.close()
 

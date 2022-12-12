@@ -28,7 +28,7 @@
         <! send data through uri >
 
         <p> Enter your WiFi SSID (name of the network) and your WiFi Password </p>
-        <form action="/set?ssid=SSID&password=PASSWORD" method="get">
+        <form action="/ssid=SSID,password=PASSWORD" method="get">
             <label for="ssid">SSID:</label><br>
             <input type="text" id="ssid" name="ssid"><br>
             <label for="password">Password:</label><br>
@@ -37,7 +37,7 @@
 
         <p> Enter what stocks your want to track, the name of each </p>
         <! getting stock symbols from the user for all 5 stocks>
-        <form action="/set?stock1=STOCK1&stock2=STOCK2&stock3=STOCK3&stock4=STOCK4&stock5=STOCK5"
+        <form action="/stock1=STOCK1,stock2=STOCK2,stock3=STOCK3,stock4=STOCK4,stock5=STOCK5"
               <label for="stock1">Stock 1:</label><br>
               <input type="text" id="stock1" name="stock1"><br>
               <label for="stock2">Stock 2:</label><br>
