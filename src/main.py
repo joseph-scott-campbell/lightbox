@@ -49,11 +49,12 @@ def connect():
     else:
         # start access point
         wlan = network.WLAN(network.AP_IF)
+        wlan.config(essid="test", key="password")
         wlan.active(True)
-        wlan.config(essid="test", password="test")
-        print("Access Point Started")
-        print("IP Address:", wlan.ifconfig()[0])
+        # print information for connecting to network
+        print("SSID:", wlan.config("essid"))
         webserver()
+
 
 def uri_parser(uri):
     # parsing the uri based on the input boxes in
