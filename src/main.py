@@ -22,8 +22,12 @@ from finance import finance
 STOCKS = {"NASDAQ": {"symbol": "^IXIC", "pin": 16},
           "Dow Jones": {"symbol": "^DJI", "pin": 17}}
 
+# Debugging Settings
+WEBSERVER_DEBUG_MODE = True
+NETWORK_DEBUG_MODE = True
+
 # Wifi Credentials
-SSID = "TP-Link_51C"
+SSID = "TP-Link_51CA"
 PASSWORD = "password"
 rp2.country("US")  # regional code
 
@@ -36,9 +40,17 @@ strip = Neopixel(NEOPIXEL_LEN, 0, 16, "RGB")
 
 
 def connect():
-    # check if SSID variable is an available network
-    # if it is not available, then start an access point
-    if SSID in [i[0] for i in network.WLAN().scan()]:
+    time.sleep(1)
+
+    # get named of all SSIDs in range
+    ssids = [ssid[0].decode() for ssid in network.WLAN().scan()]
+
+    # Giving information for network debugging
+    if NETWORK_DEBUG_MODE:
+        print("Available SSIDs: " + str(ssids))
+        print("SSID Var in SSID: " + str(SSID in ssids))
+    # if the SSID is in range then connect to it
+    if SSID in ssids:
         wlan = network.WLAN(network.STA_IF)
         wlan.active(True)
         wlan.connect(SSID, PASSWORD)
@@ -124,6 +136,10 @@ def calculate_color(percent_change):
 
 
 connect()  # connecting to wifi network
+
+# giving information for debugging
+if WEBSERVER_DEBUG_MODE:
+    webserver()  # starting webserver
 
 # Using try and except general to make it more resiliant
 try:
