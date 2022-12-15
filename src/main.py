@@ -19,8 +19,15 @@ from finance import finance
 
 # Stock Data
 
-STOCKS = {"NASDAQ": {"symbol": "^IXIC", "pin": 16},
-          "Dow Jones": {"symbol": "^DJI", "pin": 17}}
+STOCKS = {"stock1": {"symbol": "", "pin": 16},
+          "stock2": {"symbol": "", "pin": 17},
+          "stock3": {"symbol": "", "pin": 18},
+          "stock4": {"symbol": "", "pin": 19},
+          "stock5": {"symbol": "", "pin": 20}}
+
+# Wifi Data
+
+WIFI = {"SSID": "", "PASSWORD": "", "COUNTRY": "US"}
 
 # Debugging Settings
 WEBSERVER_DEBUG_MODE = True
@@ -35,8 +42,10 @@ rp2.country("US")  # regional code
 BRIGHTNESS = 80
 NEOPIXEL_LEN = 8  # length of neopixel strip
 
-# Initalizing Neopixel
-strip = Neopixel(NEOPIXEL_LEN, 0, 16, "RGB")
+# Inititalizing NeoPixels
+for stock in STOCKS:
+    STOCKS[stock]["neopixel"] = Neopixel(NEOPIXEL_LEN, 0, STOCKS[stock]
+                                         ["pin"], "RGB")
 
 
 def connect():
@@ -65,13 +74,12 @@ def connect():
         wlan.active(True)
         # print information for connecting to network
         print("SSID:", wlan.config("essid"))
-        webserver()
+        webserver()  # starting configuration webserver
 
 
 def uri_parser(uri):
     # parsing the uri based on the input boxes in
     # www/index.html
-
     # if the uri is "break" then it will break the webserver loop
     if uri == "break":
         return True
@@ -79,7 +87,75 @@ def uri_parser(uri):
     elif uri == "reset":
         machine.reset()
     else:
-        print(uri)
+        # setting the variables to the values in the uri
+        # the uri is in the format of "ssid=SOMETHING&password=SOMETHING&stock1
+        #                              =SOMETHING&stock2=SOMETHING&stock3=SOMET
+        #                              HING&stock4=SOMETHING&stock5=SOMETHING"
+        # so it's split on the "&" and then split on the "="
+        # the first value is the variable name and the second is the value
+        # the variables are then set to the values
+        uri = uri.split("&")
+        for i in uri:
+            i = i.split("=")
+
+            # handle html encoding
+            # it's ugly but necessary
+            i[1] = i[1].replace("%20", " ")
+            i[1] = i[1].replace("%21", "!")
+            i[1] = i[1].replace("%22", '"')
+            i[1] = i[1].replace("%23", "#")
+            i[1] = i[1].replace("%24", "$")
+            i[1] = i[1].replace("%25", "%")
+            i[1] = i[1].replace("%26", "&")
+            i[1] = i[1].replace("%27", "'")
+            i[1] = i[1].replace("%28", "(")
+            i[1] = i[1].replace("%29", ")")
+            i[1] = i[1].replace("%2A", "*")
+            i[1] = i[1].replace("%2B", "+")
+            i[1] = i[1].replace("%2C", ",")
+            i[1] = i[1].replace("%2D", "-")
+            i[1] = i[1].replace("%2E", ".")
+            i[1] = i[1].replace("%2F", "/")
+            i[1] = i[1].replace("%3A", ":")
+            i[1] = i[1].replace("%3B", ";")
+            i[1] = i[1].replace("%3C", "<")
+            i[1] = i[1].replace("%3D", "=")
+            i[1] = i[1].replace("%3E", ">")
+            i[1] = i[1].replace("%3F", "?")
+            i[1] = i[1].replace("%40", "@")
+            i[1] = i[1].replace("%5B", "[")
+            i[1] = i[1].replace("%5C", "\\")
+            i[1] = i[1].replace("%5D", "]")
+            i[1] = i[1].replace("%5E", "^")
+            i[1] = i[1].replace("%5F", "_")
+            i[1] = i[1].replace("%60", "`")
+            i[1] = i[1].replace("%7B", "{")
+            i[1] = i[1].replace("%7C", "|")
+            i[1] = i[1].replace("%7D", "}")
+            i[1] = i[1].replace("%7E", "~")
+            i[1] = i[1].replace("%7F", " ")
+
+            # don't fill any feilds that are empty
+            if i[1] != "":
+                pass
+
+            # checking that input is vaild and filling fields
+            if i[0] == "ssid":
+                WIFI["SSID"] = i[1]
+            elif i[0] == "password":
+                WIFI["PASSWORD"] = i[1]
+            elif i[0] == "stock1":
+                STOCKS["stock1"]["symbol"] = i[1]
+            elif i[0] == "stock2":
+                STOCKS["stock2"]["symbol"] = i[1]
+            elif i[0] == "stock3":
+                STOCKS["stock3"]["symbol"] = i[1]
+            elif i[0] == "stock4":
+                STOCKS["stock4"]["symbol"] = i[1]
+            elif i[0] == "stock5":
+                STOCKS["stock5"]["symbol"] = i[1]
+
+        print(STOCKS)
 
 
 def webserver():
@@ -146,7 +222,6 @@ try:
     while True:
         for stock in STOCKS:
             # fetching data from STOCKS dictionary
-            STOCKS[stock]["neopixel"] = Neopixel(NEOPIXEL_LEN, 0, STOCKS[stock]["pin"], "RGB")
             pixel_color = calculate_color(finance.get_percent_change(STOCKS[stock]["symbol"]))
             print(stock)
             print(pixel_color)
