@@ -5,29 +5,22 @@ import network
 # needed for restarting the code
 import machine
 
-# needed for webserver
-import socket
-import re
-
 # misc
 import time
+import json
 
 from neopixel import Neopixel
 from finance import finance
-
+from webserver import webserver
 # Configuration Variables
 
-# Stock Data
+with open("wifi.json", "r") as f:
+    WIFI = json.load(f)
+with open("stocks.json", "r") as f:
+    STOCKS = json.load(f)
 
-STOCKS = {"stock1": {"symbol": "", "pin": 16},
-          "stock2": {"symbol": "", "pin": 17},
-          "stock3": {"symbol": "", "pin": 18},
-          "stock4": {"symbol": "", "pin": 19},
-          "stock5": {"symbol": "", "pin": 20}}
-
-# Wifi Data
-
-WIFI = {"SSID": "", "PASSWORD": "", "COUNTRY": "US"}
+print(WIFI)
+print(STOCKS)
 
 # Debugging Settings
 WEBSERVER_DEBUG_MODE = True
@@ -43,9 +36,11 @@ BRIGHTNESS = 80
 NEOPIXEL_LEN = 8  # length of neopixel strip
 
 # Inititalizing NeoPixels
+NEOPIXELS = [1, 2, 3, 4, 5]
+
 for stock in STOCKS:
-    STOCKS[stock]["neopixel"] = Neopixel(NEOPIXEL_LEN, 0, STOCKS[stock]
-                                         ["pin"], "RGB")
+    NEOPIXELS[STOCKS[stock]["number"]] = Neopixel(NEOPIXEL_LEN, 0,
+                                                  STOCKS[stock]["pin"], "RGB")
 
 
 def connect():
@@ -59,22 +54,28 @@ def connect():
         print("Available SSIDs: " + str(ssids))
         print("SSID Var in SSID: " + str(SSID in ssids))
     # if the SSID is in range then connect to it
-    if SSID in ssids:
+    if WIFI["SSID"] in ssids:
         wlan = network.WLAN(network.STA_IF)
         wlan.active(True)
         wlan.connect(SSID, PASSWORD)
         while not wlan.isconnected():
             time.sleep(1)
-        print("Connected to", SSID)
+        print("Connected to", WIFI["SSID"])
         print("IP Address:", wlan.ifconfig()[0])
     else:
         # start access point
         wlan = network.WLAN(network.AP_IF)
-        wlan.config(essid="test", key="password")
+        wlan.config(essid="StockBox Configuration Network", key="StockBox")
         wlan.active(True)
         # print information for connecting to network
         print("SSID:", wlan.config("essid"))
-        webserver()  # starting configuration webserver
+
+        while True:
+            uri = webserver.run()  # running config webserver
+
+            # remove html escape codes and replace with actual characters
+            uri = webserver.fix_html()
+            uri_parser(uri)  # parse the uri
 
 
 def uri_parser(uri):
@@ -97,47 +98,8 @@ def uri_parser(uri):
         uri = uri.split("&")
         for i in uri:
             i = i.split("=")
-
-            # handle html encoding
-            # it's ugly but necessary
-            i[1] = i[1].replace("%20", " ")
-            i[1] = i[1].replace("%21", "!")
-            i[1] = i[1].replace("%22", '"')
-            i[1] = i[1].replace("%23", "#")
-            i[1] = i[1].replace("%24", "$")
-            i[1] = i[1].replace("%25", "%")
-            i[1] = i[1].replace("%26", "&")
-            i[1] = i[1].replace("%27", "'")
-            i[1] = i[1].replace("%28", "(")
-            i[1] = i[1].replace("%29", ")")
-            i[1] = i[1].replace("%2A", "*")
-            i[1] = i[1].replace("%2B", "+")
-            i[1] = i[1].replace("%2C", ",")
-            i[1] = i[1].replace("%2D", "-")
-            i[1] = i[1].replace("%2E", ".")
-            i[1] = i[1].replace("%2F", "/")
-            i[1] = i[1].replace("%3A", ":")
-            i[1] = i[1].replace("%3B", ";")
-            i[1] = i[1].replace("%3C", "<")
-            i[1] = i[1].replace("%3D", "=")
-            i[1] = i[1].replace("%3E", ">")
-            i[1] = i[1].replace("%3F", "?")
-            i[1] = i[1].replace("%40", "@")
-            i[1] = i[1].replace("%5B", "[")
-            i[1] = i[1].replace("%5C", "\\")
-            i[1] = i[1].replace("%5D", "]")
-            i[1] = i[1].replace("%5E", "^")
-            i[1] = i[1].replace("%5F", "_")
-            i[1] = i[1].replace("%60", "`")
-            i[1] = i[1].replace("%7B", "{")
-            i[1] = i[1].replace("%7C", "|")
-            i[1] = i[1].replace("%7D", "}")
-            i[1] = i[1].replace("%7E", "~")
-            i[1] = i[1].replace("%7F", " ")
-
-            # don't fill any feilds that are empty
-            if i[1] != "":
-                pass
+            if len(i) < 2:
+                return
 
             # checking that input is vaild and filling fields
             if i[0] == "ssid":
@@ -155,45 +117,13 @@ def uri_parser(uri):
             elif i[0] == "stock5":
                 STOCKS["stock5"]["symbol"] = i[1]
 
-        print(STOCKS)
+            # save the STOCKS and WIFI dictionaries to a file
+            with open("stocks.json", "w") as f:
+                json.dump(STOCKS, f)
+            with open("wifi.json", "w") as f:
+                json.dump(WIFI, f)
 
-
-def webserver():
-    #  a very simple custom webserver because the existing
-    # alternatives are too complex for my purposes
-    addr = socket.getaddrinfo('0.0.0.0', 80)[0][-1]
-
-    s = socket.socket()
-    s.bind(addr)
-    s.listen(1)
-
-    print('listening on', addr)
-
-    file = open("/www/index.html", "r")  # getting html page from index.html
-    html = file.read()  # converting the file pointer into a string
-
-    # Starting a infinate webserver loop
-    while True:
-        # accepting connection
-        conn, addr = s.accept()
-        print('client connect from', addr)
-
-        # receiving 1024 bytes of data
-        request = conn.recv(1024)
-
-        # filtering get requesting using magic regex
-        match = re.search("GET\s+(\S+)\s+", request.decode())
-        uri = match.group(1)
-        uri = uri.replace("/", "")  # getting rid of the "/" in the uri
-
-        print(uri)
-        # sending http request
-        conn.send('HTTP/1.0 200 OK\r\nContent-type: text/html\r\n\r\n')
-        conn.send(html)  # sending the html
-        conn.close()  # closing the connection
-        uri_parser(uri)  # parsing the uri
-    # close the socket
-    s.close()
+            print(i)
 
 
 def calculate_color(percent_change):
@@ -222,7 +152,9 @@ try:
     while True:
         for stock in STOCKS:
             # fetching data from STOCKS dictionary
-            pixel_color = calculate_color(finance.get_percent_change(STOCKS[stock]["symbol"]))
+            pixel_color = calculate_color(finance.get_percent_change(
+                STOCKS[stock]["symbol"]))
+
             print(stock)
             print(pixel_color)
             for pixel in range(NEOPIXEL_LEN):
