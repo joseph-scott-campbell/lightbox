@@ -2,6 +2,9 @@
 import rp2
 import network
 
+# used for storing data
+import json
+
 # needed for restarting the code
 import machine
 
@@ -155,6 +158,10 @@ def uri_parser(uri):
             elif i[0] == "stock5":
                 STOCKS["stock5"]["symbol"] = i[1]
 
+        with open("stocks.json", "w") as f:
+            json.dump(STOCKS, f)
+        with open("wifi.json", "w") as f:
+            json.dump(WIFI, f)
         print(STOCKS)
 
 
