@@ -100,47 +100,47 @@ def uri_parser(uri):
         uri = uri.split("&")
         for i in uri:
             i = i.split("=")
+            if len(i) < 0:
+                # handle html encoding
+                # it's ugly but necessary
+                i[1] = i[1].replace("%20", " ")
+                i[1] = i[1].replace("%21", "!")
+                i[1] = i[1].replace("%22", '"')
+                i[1] = i[1].replace("%23", "#")
+                i[1] = i[1].replace("%24", "$")
+                i[1] = i[1].replace("%25", "%")
+                i[1] = i[1].replace("%26", "&")
+                i[1] = i[1].replace("%27", "'")
+                i[1] = i[1].replace("%28", "(")
+                i[1] = i[1].replace("%29", ")")
+                i[1] = i[1].replace("%2A", "*")
+                i[1] = i[1].replace("%2B", "+")
+                i[1] = i[1].replace("%2C", ",")
+                i[1] = i[1].replace("%2D", "-")
+                i[1] = i[1].replace("%2E", ".")
+                i[1] = i[1].replace("%2F", "/")
+                i[1] = i[1].replace("%3A", ":")
+                i[1] = i[1].replace("%3B", ";")
+                i[1] = i[1].replace("%3C", "<")
+                i[1] = i[1].replace("%3D", "=")
+                i[1] = i[1].replace("%3E", ">")
+                i[1] = i[1].replace("%3F", "?")
+                i[1] = i[1].replace("%40", "@")
+                i[1] = i[1].replace("%5B", "[")
+                i[1] = i[1].replace("%5C", "\\")
+                i[1] = i[1].replace("%5D", "]")
+                i[1] = i[1].replace("%5E", "^")
+                i[1] = i[1].replace("%5F", "_")
+                i[1] = i[1].replace("%60", "`")
+                i[1] = i[1].replace("%7B", "{")
+                i[1] = i[1].replace("%7C", "|")
+                i[1] = i[1].replace("%7D", "}")
+                i[1] = i[1].replace("%7E", "~")
+                i[1] = i[1].replace("%7F", " ")
 
-            # handle html encoding
-            # it's ugly but necessary
-            i[1] = i[1].replace("%20", " ")
-            i[1] = i[1].replace("%21", "!")
-            i[1] = i[1].replace("%22", '"')
-            i[1] = i[1].replace("%23", "#")
-            i[1] = i[1].replace("%24", "$")
-            i[1] = i[1].replace("%25", "%")
-            i[1] = i[1].replace("%26", "&")
-            i[1] = i[1].replace("%27", "'")
-            i[1] = i[1].replace("%28", "(")
-            i[1] = i[1].replace("%29", ")")
-            i[1] = i[1].replace("%2A", "*")
-            i[1] = i[1].replace("%2B", "+")
-            i[1] = i[1].replace("%2C", ",")
-            i[1] = i[1].replace("%2D", "-")
-            i[1] = i[1].replace("%2E", ".")
-            i[1] = i[1].replace("%2F", "/")
-            i[1] = i[1].replace("%3A", ":")
-            i[1] = i[1].replace("%3B", ";")
-            i[1] = i[1].replace("%3C", "<")
-            i[1] = i[1].replace("%3D", "=")
-            i[1] = i[1].replace("%3E", ">")
-            i[1] = i[1].replace("%3F", "?")
-            i[1] = i[1].replace("%40", "@")
-            i[1] = i[1].replace("%5B", "[")
-            i[1] = i[1].replace("%5C", "\\")
-            i[1] = i[1].replace("%5D", "]")
-            i[1] = i[1].replace("%5E", "^")
-            i[1] = i[1].replace("%5F", "_")
-            i[1] = i[1].replace("%60", "`")
-            i[1] = i[1].replace("%7B", "{")
-            i[1] = i[1].replace("%7C", "|")
-            i[1] = i[1].replace("%7D", "}")
-            i[1] = i[1].replace("%7E", "~")
-            i[1] = i[1].replace("%7F", " ")
-
-            # don't fill any feilds that are empty
-            if i[1] != "":
-                pass
+                # don't fill any feilds that are empty
+                if i[1] != "":
+                    pass
 
             # checking that input is vaild and filling fields
             if i[0] == "ssid":
