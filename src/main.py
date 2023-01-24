@@ -12,6 +12,9 @@ import machine
 import socket
 import re
 
+# needed for parsing URIs
+import urllib.parse
+
 # misc
 import time
 
@@ -97,66 +100,13 @@ def uri_parser(uri):
         # so it's split on the "&" and then split on the "="
         # the first value is the variable name and the second is the value
         # the variables are then set to the values
-        uri = uri.split("&")
+        uri = urllib.parse.parse_qs(uri)
         for i in uri:
-            i = i.split("=")
-            if len(i) < 0:
-                # handle html encoding
-                # it's ugly but necessary
-                i[1] = i[1].replace("%20", " ")
-                i[1] = i[1].replace("%21", "!")
-                i[1] = i[1].replace("%22", '"')
-                i[1] = i[1].replace("%23", "#")
-                i[1] = i[1].replace("%24", "$")
-                i[1] = i[1].replace("%25", "%")
-                i[1] = i[1].replace("%26", "&")
-                i[1] = i[1].replace("%27", "'")
-                i[1] = i[1].replace("%28", "(")
-                i[1] = i[1].replace("%29", ")")
-                i[1] = i[1].replace("%2A", "*")
-                i[1] = i[1].replace("%2B", "+")
-                i[1] = i[1].replace("%2C", ",")
-                i[1] = i[1].replace("%2D", "-")
-                i[1] = i[1].replace("%2E", ".")
-                i[1] = i[1].replace("%2F", "/")
-                i[1] = i[1].replace("%3A", ":")
-                i[1] = i[1].replace("%3B", ";")
-                i[1] = i[1].replace("%3C", "<")
-                i[1] = i[1].replace("%3D", "=")
-                i[1] = i[1].replace("%3E", ">")
-                i[1] = i[1].replace("%3F", "?")
-                i[1] = i[1].replace("%40", "@")
-                i[1] = i[1].replace("%5B", "[")
-                i[1] = i[1].replace("%5C", "\\")
-                i[1] = i[1].replace("%5D", "]")
-                i[1] = i[1].replace("%5E", "^")
-                i[1] = i[1].replace("%5F", "_")
-                i[1] = i[1].replace("%60", "`")
-                i[1] = i[1].replace("%7B", "{")
-                i[1] = i[1].replace("%7C", "|")
-                i[1] = i[1].replace("%7D", "}")
-                i[1] = i[1].replace("%7E", "~")
-                i[1] = i[1].replace("%7F", " ")
-
-                # don't fill any feilds that are empty
-                if i[1] != "":
-                    pass
-
-            # checking that input is vaild and filling fields
-            if i[0] == "ssid":
-                WIFI["SSID"] = i[1]
-            elif i[0] == "password":
-                WIFI["PASSWORD"] = i[1]
-            elif i[0] == "stock1":
-                STOCKS["stock1"]["symbol"] = i[1]
-            elif i[0] == "stock2":
-                STOCKS["stock2"]["symbol"] = i[1]
-            elif i[0] == "stock3":
-                STOCKS["stock3"]["symbol"] = i[1]
-            elif i[0] == "stock4":
-                STOCKS["stock4"]["symbol"] = i[1]
-            elif i[0] == "stock5":
-                STOCKS["stock5"]["symbol"] = i[1]
+            # filling fields
+            if i in STOCKS:
+                STOCKS[i]["symbol"] = uri[i][0]
+            elif i.upper() in WIFI:
+                WIFI[i.upper()] = uri[i][0]
 
         with open("stocks.json", "w") as f:
             json.dump(STOCKS, f)
