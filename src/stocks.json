@@ -1,0 +1,26 @@
+{
+	"stock1": {
+		"symbol": "AMD",
+		"pin": 19
+	},
+	"stock2": {
+		"symbol": "^IXIC",
+		"pin": 18
+	},
+	"stock3": {
+		"symbol": "^DJI",
+		"pin": 12
+	},
+	"stock4": {
+		"symbol": "GE",
+		"pin": 20
+	},
+	"stock5": {
+		"symbol": "INTC",
+		"pin": 15
+	},
+	"stock6": {
+		"symbol": "F",
+		"pin": 21
+	}
+}

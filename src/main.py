@@ -22,40 +22,36 @@ from finance import finance
 
 # Stock Data
 
-STOCKS = {"stock1": {"symbol": "", "pin": 16},
-          "stock2": {"symbol": "", "pin": 17},
-          "stock3": {"symbol": "", "pin": 18},
-          "stock4": {"symbol": "", "pin": 19},
-          "stock5": {"symbol": "", "pin": 20}}
+# Load stock data
+# take data from stocks.json and put it into a dictionary
+with open("stocks.json", "r") as file:
+    STOCKS = json.load(file)
+with open("wifi.json", "r") as file:
+    WIFI = json.load(file)
 
 # Wifi Data
 
-WIFI = {"SSID": "", "PASSWORD": "", "COUNTRY": "US"}
-
 # Debugging Settings
-WEBSERVER_DEBUG_MODE = True
-NETWORK_DEBUG_MODE = True
+WEBSERVER_DEBUG_MODE = False
+NETWORK_DEBUG_MODE = False
 
 # Wifi Credentials
-SSID = "TP-Link_51CA"
-PASSWORD = "password"
+SSID = WIFI["SSID"]
+PASSWORD = WIFI["PASSWORD"]
 rp2.country("US")  # regional code
 
 # Neopixel
 BRIGHTNESS = 80
-NEOPIXEL_LEN = 8  # length of neopixel strip
-
-# Inititalizing NeoPixels
-for stock in STOCKS:
-    STOCKS[stock]["neopixel"] = Neopixel(NEOPIXEL_LEN, 0, STOCKS[stock]
-                                         ["pin"], "RGB")
-
+NEOPIXEL_LEN = 3 # length of neopixel strip
+                                                                                                         
 
 def connect():
     time.sleep(1)
+    wlan = network.WLAN()
+    wlan.active(True)
 
     # get named of all SSIDs in range
-    ssids = [ssid[0].decode() for ssid in network.WLAN().scan()]
+    ssids = [ssid[0].decode() for ssid in wlan.scan()]
 
     # Giving information for network debugging
     if NETWORK_DEBUG_MODE:
@@ -159,7 +155,14 @@ def uri_parser(uri):
                 STOCKS["stock5"]["symbol"] = i[1]
 
         with open("stocks.json", "w") as f:
-            json.dump(STOCKS, f)
+            # dont save the neopixel object
+            temp = STOCKS
+            temp["stock1"]["neopixel"] = None
+            temp["stock2"]["neopixel"] = None
+            temp["stock3"]["neopixel"] = None
+            temp["stock4"]["neopixel"] = None
+            temp["stock5"]["neopixel"] = None
+            json.dump(temp, f)
         with open("wifi.json", "w") as f:
             json.dump(WIFI, f)
         print(STOCKS)
@@ -211,12 +214,16 @@ def calculate_color(percent_change):
     # changing which color is changed based on if it's positive or negative
     if percent_change >= 0:
         green = (BRIGHTNESS * percent_change)
+        if green >= 255:
+            green = 200
+        
     elif percent_change < 0:
         red = abs((BRIGHTNESS * percent_change))  # getting abs value
+        if red >= 255:
+            red = 200
 
     # have to use green, red, blue with this library for some reason
     return (green, red, blue)  # returning variables are tuple
-
 
 connect()  # connecting to wifi network
 
@@ -225,18 +232,31 @@ if WEBSERVER_DEBUG_MODE:
     webserver()  # starting webserver
 
 # Using try and except general to make it more resiliant
-try:
-    while True:
-        for stock in STOCKS:
-            # fetching data from STOCKS dictionary
-            pixel_color = calculate_color(finance.get_percent_change(STOCKS[stock]["symbol"]))
-            print(stock)
-            print(pixel_color)
-            for pixel in range(NEOPIXEL_LEN):
-                STOCKS[stock]["neopixel"].set_pixel(pixel, pixel_color)
-            STOCKS[stock]["neopixel"].show()
-        time.sleep(5)
+# try:
+while True:
+    for stock in STOCKS:
+        # fetching data from STOCKS dictionary
+        print(stock)
+        print(STOCKS[stock])
+        
+        # color to be displayed
+        pixel_color = calculate_color(finance.get_percent_change(STOCKS[stock]["symbol"]))
+        
+        print(stock)
+        print(pixel_color)
+        
+        pix = Neopixel(3, 0, STOCKS[stock]["pin"])
+        
+        # library does not support lighting whole strip
+        # so individual pixels are used
+        # unwrapped loop for clarity and proformance
+        pix.set_pixel(0, pixel_color)
+        pix.set_pixel(1, pixel_color)
+        pix.set_pixel(2, pixel_color)
+
+        pix.show()
+    time.sleep(5)
 # using bare except because I want it to restart regardless of error
-except:  # if there is an error, restart the code
-    print("Error")
-    machine.reset()
+#except:  # if there is an error, restart the code
+#    print("Error")
+#    machine.reset()
