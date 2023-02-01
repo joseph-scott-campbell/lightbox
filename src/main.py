@@ -42,8 +42,8 @@ rp2.country("US")  # regional code
 
 # Neopixel
 BRIGHTNESS = 80
-NEOPIXEL_LEN = 3 # length of neopixel strip
-                                                                                                         
+NEOPIXEL_LEN = 3  # length of neopixel strip
+
 
 def connect():
     time.sleep(1)
@@ -216,7 +216,7 @@ def calculate_color(percent_change):
         green = (BRIGHTNESS * percent_change)
         if green >= 255:
             green = 200
-        
+
     elif percent_change < 0:
         red = abs((BRIGHTNESS * percent_change))  # getting abs value
         if red >= 255:
@@ -227,36 +227,37 @@ def calculate_color(percent_change):
 
 connect()  # connecting to wifi network
 
+
 # giving information for debugging
 if WEBSERVER_DEBUG_MODE:
     webserver()  # starting webserver
 
 # Using try and except general to make it more resiliant
-# try:
-while True:
-    for stock in STOCKS:
-        # fetching data from STOCKS dictionary
-        print(stock)
-        print(STOCKS[stock])
-        
-        # color to be displayed
-        pixel_color = calculate_color(finance.get_percent_change(STOCKS[stock]["symbol"]))
-        
-        print(stock)
-        print(pixel_color)
-        
-        pix = Neopixel(3, 0, STOCKS[stock]["pin"])
-        
-        # library does not support lighting whole strip
-        # so individual pixels are used
-        # unwrapped loop for clarity and proformance
-        pix.set_pixel(0, pixel_color)
-        pix.set_pixel(1, pixel_color)
-        pix.set_pixel(2, pixel_color)
+try:
+    while True:
+        for stock in STOCKS:
+            # fetching data from STOCKS dictionary
+            print(stock)
+            print(STOCKS[stock])
 
-        pix.show()
-    time.sleep(5)
+            # color to be displayed
+            pixel_color = calculate_color(finance.get_percent_change(STOCKS[stock]["symbol"]))
+
+            print(stock)
+            print(pixel_color)
+
+            pix = Neopixel(3, 0, STOCKS[stock]["pin"])
+
+            # library does not support lighting whole strip
+            # so individual pixels are used
+            # unwrapped loop for clarity and proformance
+            pix.set_pixel(0, pixel_color)
+            pix.set_pixel(1, pixel_color)
+            pix.set_pixel(2, pixel_color)
+
+            pix.show()
+        time.sleep(5)
 # using bare except because I want it to restart regardless of error
-#except:  # if there is an error, restart the code
-#    print("Error")
-#    machine.reset()
+except:  # if there is an error, restart the code
+    print("Error")
+    machine.reset()
